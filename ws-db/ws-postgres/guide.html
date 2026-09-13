@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PostgreSQL Daily-Use Guide</title>
+<style>
+  body { font-family: -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; max-width: 900px; margin: 0 auto; padding: 1.5rem; line-height: 1.6; color: #222; background: #fafafa; }
+  h1 { border-bottom: 2px solid #4a90d9; padding-bottom: .3rem; }
+  h2 { color: #2c3e50; margin-top: 2rem; border-left: 4px solid #4a90d9; padding-left: .6rem; }
+  h3 { color: #34495e; }
+  code { background: #eee; padding: 2px 5px; border-radius: 3px; font-family: Menlo, Consolas, monospace; font-size: .95em; }
+  pre { background: #1e1e1e; color: #dcdcdc; padding: 1rem; border-radius: 6px; overflow-x: auto; }
+  pre code { background: none; color: inherit; }
+  table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+  th, td { border: 1px solid #ccc; padding: .5rem .75rem; text-align: left; }
+  th { background: #4a90d9; color: #fff; }
+  blockquote { border-left: 4px solid #4a90d9; background: #f0f4f8; padding: .6rem 1rem; margin: 1rem 0; }
+  .tip { background: #e8f5e9; border-left: 4px solid #4caf50; padding: .6rem 1rem; margin: 1rem 0; }
+  .warn { background: #fff3e0; border-left: 4px solid #ff9800; padding: .6rem 1rem; margin: 1rem 0; }
+  .ok { color: #22863a; font-weight: bold; }
+  footer { margin-top: 3rem; border-top: 1px solid #ccc; padding-top: 1rem; color: #777; font-size: .9em; }
+</style>
+</head>
+<body>
+
+<h1>PostgreSQL Daily-Use Guide</h1>
+<p>A practical, day-to-day reference for working with PostgreSQL locally. Written for the setup installed via Homebrew (<code>postgresql@18</code>), but the SQL and psql commands apply to any PostgreSQL server.</p>
+
+<h2>0. Readiness Check — Verified</h2>
+<p>Verified on 2026-09-05: the PostgreSQL server is running and ready for use.</p>
+<table>
+<tr><th>Check</th><th>Command</th><th>Result</th></tr>
+<tr><td>Server process</td><td><code>pgrep -fl postgres</code></td><td class="ok">running (<code>postgresql@18</code>)</td></tr>
+<tr><td>Port 5432</td><td><code>nc -zv localhost 5432</code></td><td class="ok">succeeded</td></tr>
+<tr><td>Connect + query</td><td><code>psql -U ericho -d postgres -c "SELECT 1"</code></td><td class="ok">SELECT 1 -> 1</td></tr>
+<tr><td>Large table</td><td><code>SELECT COUNT(*) FROM large_table</code></td><td class="ok">50,000,000 rows</td></tr>
+</table>
+<div class="tip"><strong>Ready:</strong> the server is up, port 5432 is listening, and authenticated queries execute successfully.</div>
+
+<h2>1. Getting Started</h2>
+
+<h3>Connect to the server</h3>
+<pre><code>psql -d postgres          # connect to the default "postgres" database
+psql -d mydb              # connect to a specific database
+psql -U username -d mydb  # connect as a specific user
+psql -h localhost -p 5432 # specify host and port (defaults: localhost:5432)</code></pre>
+<p>On the Homebrew setup, local connections use <code>trust</code> auth, so you connect as your macOS user (<code>ericho</code>) with no password.</p>
+
+<h3>What is a database?</h3>
+<p>A <strong>database</strong> is a named collection of tables. PostgreSQL ships with a default database called <code>postgres</code> (used for maintenance) plus <code>template1</code> (a template for creating new databases). You almost never work directly in <code>postgres</code> — create your own.</p>
+
+<h3>Create / drop a database</h3>
+<pre><code>createdb mydb             # create a database (command-line tool)
+dropdb mydb               # drop a database (command-line tool)</code></pre>
+<p>Or inside psql:</p>
+<pre><code>CREATE DATABASE mydb;
+DROP DATABASE mydb;</code></pre>
+<div class="warn"><strong>Note:</strong> <code>CREATE DATABASE</code> cannot run inside a transaction block, and you cannot drop a database you are currently connected to.</div>
+
+<h2>2. psql Essentials (Meta-Commands)</h2>
+<p>psql is the interactive terminal. Commands starting with <code>\</code> are <strong>meta-commands</strong> — they control psql itself, not SQL.</p>
+<table>
+<tr><th>Command</th><th>What it does</th></tr>
+<tr><td><code>\l</code></td><td>List all databases</td></tr>
+<tr><td><code>\c mydb</code></td><td>Connect to database <code>mydb</code></td></tr>
+<tr><td><code>\dt</code></td><td>List tables in the current database</td></tr>
+<tr><td><code>\d tablename</code></td><td>Describe a table (columns, indexes, constraints)</td></tr>
+<tr><td><code>\di</code></td><td>List indexes</td></tr>
+<tr><td><code>\dv</code></td><td>List views</td></tr>
+<tr><td><code>\df</code></td><td>List functions</td></tr>
+<tr><td><code>\dn</code></td><td>List schemas</td></tr>
+<tr><td><code>\du</code></td><td>List roles (users)</td></tr>
+<tr><td><code>\dp</code></td><td>List table privileges</td></tr>
+<tr><td><code>\d+ tablename</code></td><td>Detailed description of a table</td></tr>
+<tr><td><code>\dt+</code></td><td>Tables with size and description</td></tr>
+<tr><td><code>\pset</code></td><td>Adjust display options (e.g. <code>\pset pager off</code>)</td></tr>
+<tr><td><code>\x</code></td><td>Toggle expanded (vertical) display for wide rows</td></tr>
+<tr><td><code>\q</code></td><td>Quit psql</td></tr>
+<tr><td><code>\h</code></td><td>Help on SQL syntax</td></tr>
+<tr><td><code>\?</code></td><td>Help on meta-commands</td></tr>
+<tr><td><code>\e</code></td><td>Open the last query in your editor</td></tr>
+<tr><td><code>\i file.sql</code></td><td>Execute SQL from a file</td></tr>
+<tr><td><code>\timing</code></td><td>Toggle query timing display</td></tr>
+</table>
+<div class="tip"><strong>Tip:</strong> <code>\d</code> is the most useful command — it shows you the structure of any table, view, or index in one glance.</div>
+
+<h2>3. SQL Fundamentals</h2>
+
+<h3>SELECT — read data</h3>
+<pre><code>SELECT * FROM users;                    -- all columns, all rows
+SELECT name, email FROM users;          -- specific columns
+SELECT * FROM users WHERE age > 30;     -- filter rows
+SELECT * FROM users ORDER BY name;      -- sort
+SELECT * FROM users LIMIT 10;           -- first 10 rows
+SELECT COUNT(*) FROM users;             -- count rows
+SELECT AVG(age) FROM users;             -- average of a column</code></pre>
+
+<h3>INSERT — add data</h3>
+<pre><code>INSERT INTO users (name, email) VALUES ('Alice', 'alice@example.com');
+INSERT INTO users (name, email) VALUES
+  ('Bob', 'bob@example.com'),
+  ('Carol', 'carol@example.com');       -- multiple rows at once</code></pre>
+
+<h3>UPDATE — change data</h3>
+<pre><code>UPDATE users SET email = 'new@example.com' WHERE name = 'Alice';</code></pre>
+<div class="warn"><strong>Always use a <code>WHERE</code> clause.</strong> Without it, <code>UPDATE</code> changes every row in the table.</div>
+
+<h3>DELETE — remove data</h3>
+<pre><code>DELETE FROM users WHERE name = 'Bob';</code></pre>
+<div class="warn"><strong>Always use a <code>WHERE</code> clause.</strong> Without it, <code>DELETE</code> removes every row.</div>
+
+<h3>WHERE conditions</h3>
+<pre><code>WHERE age > 30
+WHERE age BETWEEN 18 AND 65
+WHERE name LIKE 'A%'        -- starts with A
+WHERE email IS NULL         -- check for null
+WHERE city IN ('NYC', 'LA')
+WHERE age > 30 AND city = 'NYC'
+WHERE age > 30 OR city = 'NYC'</code></pre>
+
+<h2>4. Tables &amp; Data Types</h2>
+
+<h3>Create a table</h3>
+<pre><code>CREATE TABLE users (
+  id         SERIAL PRIMARY KEY,        -- auto-incrementing integer
+  name       TEXT NOT NULL,
+  email      TEXT UNIQUE,
+  age        INTEGER,
+  created_at TIMESTAMPTZ DEFAULT now()
+);</code></pre>
+
+<h3>Common data types</h3>
+<table>
+<tr><th>Type</th><th>Use it for</th></tr>
+<tr><td><code>SERIAL</code> / <code>BIGSERIAL</code></td><td>Auto-incrementing integer primary keys</td></tr>
+<tr><td><code>INTEGER</code> / <code>BIGINT</code></td><td>Whole numbers</td></tr>
+<tr><td><code>NUMERIC(p,s)</code></td><td>Exact decimals (money, prices)</td></tr>
+<tr><td><code>REAL</code> / <code>DOUBLE PRECISION</code></td><td>Approximate floating point</td></tr>
+<tr><td><code>TEXT</code></td><td>Long strings</td></tr>
+<tr><td><code>VARCHAR(n)</code></td><td>String with max length n</td></tr>
+<tr><td><code>BOOLEAN</code></td><td>true / false</td></tr>
+<tr><td><code>DATE</code></td><td>Just a date</td></tr>
+<tr><td><code>TIMESTAMP</code> / <code>TIMESTAMPTZ</code></td><td>Date + time (TZ = with time zone)</td></tr>
+<tr><td><code>JSONB</code></td><td>Stored JSON, queryable</td></tr>
+<tr><td><code>UUID</code></td><td>Globally unique identifiers</td></tr>
+<tr><td><code>BYTEA</code></td><td>Binary data (files, images)</td></tr>
+</table>
+<div class="tip"><strong>Prefer <code>TIMESTAMPTZ</code> over <code>TIMESTAMP</code></strong> for timestamps — it stores the time zone and converts correctly.</div>
+
+<h3>Alter a table</h3>
+<pre><code>ALTER TABLE users ADD COLUMN phone TEXT;         -- add a column
+ALTER TABLE users DROP COLUMN phone;             -- remove a column
+ALTER TABLE users RENAME COLUMN phone TO mobile; -- rename a column
+ALTER TABLE users ALTER COLUMN age SET DEFAULT 0;</code></pre>
+
+<h3>Drop a table</h3>
+<pre><code>DROP TABLE users;
+DROP TABLE IF EXISTS users;   -- safe: no error if it doesn't exist</code></pre>
+
+<h2>5. Keys &amp; Indexes</h2>
+
+<h3>Primary key</h3>
+<p>Uniquely identifies each row. PostgreSQL automatically creates an index for it.</p>
+<pre><code>CREATE TABLE users (
+  id SERIAL PRIMARY KEY
+);</code></pre>
+
+<h3>Foreign key — link tables</h3>
+<pre><code>CREATE TABLE orders (
+  id         SERIAL PRIMARY KEY,
+  user_id    INTEGER REFERENCES users(id),
+  amount     NUMERIC(10,2)
+);</code></pre>
+
+<h3>Unique constraint</h3>
+<pre><code>CREATE TABLE users (
+  email TEXT UNIQUE
+);</code></pre>
+
+<h3>Indexes — speed up lookups</h3>
+<pre><code>CREATE INDEX idx_users_email ON users (email);
+CREATE INDEX idx_orders_user ON orders (user_id);</code></pre>
+<div class="warn"><strong>When to index:</strong> columns used in <code>WHERE</code>, <code>JOIN</code>, or <code>ORDER BY</code>. Don't index everything — each index costs space and slows writes.</div>
+
+<h3>Check a query plan</h3>
+<pre><code>EXPLAIN SELECT * FROM users WHERE email = 'x@y.com';
+EXPLAIN ANALYZE SELECT * FROM users WHERE email = 'x@y.com';</code></pre>
+<p><code>EXPLAIN ANALYZE</code> actually runs the query and shows real timings — great for finding slow queries.</p>
+
+<h2>6. Transactions</h2>
+<p>A <strong>transaction</strong> groups multiple statements into one atomic unit: all succeed or all roll back.</p>
+<pre><code>BEGIN;
+UPDATE accounts SET balance = balance - 100 WHERE id = 1;
+UPDATE accounts SET balance = balance + 100 WHERE id = 2;
+COMMIT;   -- make it permanent</code></pre>
+<p>If something goes wrong, undo everything:</p>
+<pre><code>BEGIN;
+DELETE FROM orders WHERE id = 5;
+-- oops, that was a mistake
+ROLLBACK; -- undo the whole transaction</code></pre>
+<div class="tip"><strong>Rule of thumb:</strong> any multi-step change (transfer money, update several tables) belongs in a transaction.</div>
+
+<h2>7. Backups &amp; Restore</h2>
+
+<h3>Dump a single database (SQL format)</h3>
+<pre><code>pg_dump mydb &gt; mydb.sql</code></pre>
+
+<h3>Restore it</h3>
+<pre><code>psql -d mydb &lt; mydb.sql</code></pre>
+
+<h3>Dump with compression</h3>
+<pre><code>pg_dump mydb | gzip &gt; mydb.sql.gz
+zcat mydb.sql.gz | psql -d mydb</code></pre>
+
+<h3>Dump all databases</h3>
+<pre><code>pg_dumpall &gt; all.sql</code></pre>
+
+<h3>Custom-format dump (faster, selective restore)</h3>
+<pre><code>pg_dump -F c mydb &gt; mydb.dump
+pg_restore -d mydb mydb.dump</code></pre>
+<div class="tip"><strong>Daily habit:</strong> <code>pg_dump</code> before any risky change. Restoring is just <code>psql &lt; file</code>.</div>
+
+<h2>8. Performance &amp; Practical Tips</h2>
+
+<h3>See what's running</h3>
+<pre><code>SELECT pid, state, query
+FROM pg_stat_activity
+WHERE state = 'active';</code></pre>
+
+<h3>Find slow queries</h3>
+<pre><code>SELECT query, calls, total_time, mean_time
+FROM pg_stat_statements
+ORDER BY total_time DESC
+LIMIT 10;</code></pre>
+<p>Requires the <code>pg_stat_statements</code> extension: <code>CREATE EXTENSION pg_stat_statements;</code></p>
+
+<h3>Vacuum (clean up dead rows)</h3>
+<pre><code>vacuumdb mydb</code></pre>
+
+<h3>Check disk usage of tables</h3>
+<pre><code>SELECT relname, n_live_tuples, n_dead_tuples
+FROM pg_stat_user_tables;</code></pre>
+
+<h3>Useful settings</h3>
+<pre><code># In psql:
+SHOW shared_buffers;      -- memory for caching
+SHOW work_mem;            -- memory for sorting/hashing
+SHOW max_connections;</code></pre>
+
+<h2>9. Common Daily Tasks (Cheat Sheet)</h2>
+<table>
+<tr><th>Task</th><th>Command</th></tr>
+<tr><td>Connect to a database</td><td><code>psql -d mydb</code></td></tr>
+<tr><td>List databases</td><td><code>\l</code></td></tr>
+<tr><td>List tables</td><td><code>\dt</code></td></tr>
+<tr><td>Describe a table</td><td><code>\d users</code></td></tr>
+<tr><td>Create a database</td><td><code>createdb mydb</code></td></tr>
+<tr><td>Drop a database</td><td><code>dropdb mydb</code></td></tr>
+<tr><td>Create a table</td><td><code>CREATE TABLE ...</code></td></tr>
+<tr><td>Add a column</td><td><code>ALTER TABLE ... ADD COLUMN ...</code></td></tr>
+<tr><td>Back up a database</td><td><code>pg_dump mydb &gt; mydb.sql</code></td></tr>
+<tr><td>Restore a database</td><td><code>psql -d mydb &lt; mydb.sql</code></td></tr>
+<tr><td>Start the server</td><td><code>brew services start postgresql@18</code></td></tr>
+<tr><td>Stop the server</td><td><code>brew services stop postgresql@18</code></td></tr>
+<tr><td>Check server status</td><td><code>pg_ctl -D /opt/homebrew/var/postgresql@18 status</code></td></tr>
+</table>
+
+<h2>10. Where the files live (Homebrew setup)</h2>
+<ul>
+<li>Binaries: <code>/opt/homebrew/opt/postgresql@18/bin</code></li>
+<li>Data cluster: <code>/opt/homebrew/var/postgresql@18</code></li>
+<li>Config: <code>/opt/homebrew/var/postgresql@18/postgresql.conf</code></li>
+<li>Access rules: <code>/opt/homebrew/var/postgresql@18/pg_hba.conf</code></li>
+</ul>
+<p>Add the binaries to your PATH:</p>
+<pre><code>export PATH="/opt/homebrew/opt/postgresql@18/bin:$PATH"</code></pre>
+
+<footer>Generated for local learning on PostgreSQL 18.6 (Homebrew).</footer>
+
+</body>
+</html>

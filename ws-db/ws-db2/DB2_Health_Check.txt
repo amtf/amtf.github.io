@@ -1,0 +1,42 @@
+DB2 Health Check Report
+Date: 2026-09-05
+Container: db2server (icr.io/db2_community/db2)
+
+=== 1. Container status ===
+db2server  Up 16 minutes  icr.io/db2_community/db2
+
+=== 2. Restart count / stability ===
+RestartCount=0  Running=true  Health=<nil>
+
+=== 3. Instance list (db2ilist) ===
+db2inst1
+
+=== 4. DB2 processes ===
+root       1    0.0  0.0 295244  7972 ?        Ss   14:49   0:00 /bin/bash /var/db2_setup/lib/setup_db2_instance.sh
+root      5108  0.0  2.7 1642784 226636 ?      Sl   14:50   0:00 db2syscr
+db2inst1  5122  0.1  2.6 2857532 213444 ?      Sl   14:50   0:01 db2sysc
+root      5149  0.0  0.6 1642716 50748 ?       S    14:50   0:00 db2syscr
+root      5150  0.0  0.6 1642716 50112 ?       S    14:50   0:00 db2syscr
+root      5151  0.0  0.6 1642716 50112 ?       S    14:50   0:00 db2syscr
+db2inst1  5153  0.0  1.0 1040504 82940 ?       S    14:50   0:00 db2vend (PD Vendor Process - 1)
+db2inst1  5173  0.0  0.9 1069492 79752 ?       Sl   14:50   0:00 db2fmpr
+root      5208  0.0  0.0 294860  4620 ?        S    14:50   0:00 /usr/bin/tail -f .../db2diag.log
+root      5216  0.0  0.2 355216 20224 ?        S    14:50   0:00 /opt/ibm/db2/V12.1/bin/db2fmcd
+
+=== 5. Port 50000 connectivity ===
+LISTEN 0  4096  0.0.0.0:50000  0.0.0.0:*  users:(("db2sysc",pid=5122,fd=32))
+
+=== 6. Active databases ===
+SQL1611W  No data was returned by Database System Monitor.
+(normal - no database created; DBNAME not set in env.list)
+
+=== 7. Recent errors in logs (last 5m) ===
+none
+
+=== Verdict ===
+DB2 is HEALTHY:
+- Container stable (Up 16 minutes, RestartCount=0, Running=true)
+- Instance db2inst1 exists and is running
+- DB2 engine (db2sysc) is up and listening on port 50000
+- No recent errors in logs
+- No databases created yet (DBNAME not set) - normal for this setup

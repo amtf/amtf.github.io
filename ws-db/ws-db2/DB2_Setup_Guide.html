@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DB2 Community Docker Setup Guide</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; max-width: 900px; margin: 0 auto; padding: 24px; line-height: 1.6; color: #222; background: #fafafa; }
+    h1 { border-bottom: 2px solid #333; padding-bottom: 8px; }
+    h2 { margin-top: 32px; border-bottom: 1px solid #ccc; padding-bottom: 4px; }
+    h3 { margin-top: 20px; }
+    pre { background: #1e1e1e; color: #dcdcdc; padding: 16px; border-radius: 6px; overflow-x: auto; font-size: 14px; }
+    code { font-family: "SF Mono", Menlo, Consolas, monospace; }
+    .ok { color: #0a0; font-weight: bold; }
+    .warn { color: #a00; font-weight: bold; }
+    .note { background: #fff3cd; border: 1px solid #ffe49a; padding: 12px; border-radius: 6px; }
+    table { border-collapse: collapse; width: 100%; margin: 12px 0; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background: #eee; }
+  </style>
+</head>
+<body>
+  <h1>DB2 Community Docker Setup Guide</h1>
+  <p><strong>Date:</strong> 2026-09-05 &nbsp; <strong>Result:</strong> DB2 Community container <code>db2server</code> is running and fully set up, with a sample <code>large_table</code> (10 columns, 50,000,000 records) created and verified.</p>
+
+  <h2>1. Summary</h2>
+  <p>The goal was to run the IBM DB2 Community Edition (<code>icr.io/db2_community/db2</code>) in a Docker container on macOS (Docker Desktop, arm64 host, amd64 image via emulation). Two issues were encountered and resolved during setup:</p>
+  <ol>
+    <li><strong>Missing <code>env.list</code> file</strong> — the DB2 image requires an env file to configure the instance.</li>
+    <li><strong>Host bind-mount ownership problem</strong> — on Docker Desktop macOS, a host bind mount (<code>~/ws-dsh/db2-data</code>) remaps all file ownership to <code>root:root</code> inside the container, so DB2's instance setup (<code>db2icrt</code>) could not create usable home directories.</li>
+  </ol>
+  <p>The final working setup uses a <strong>Docker named volume</strong> instead of a host bind mount.</p>
+  <p>After setup, a database <code>mydb</code> was created and a sample table <code>large_table</code> (10 columns, 50,000,000 records) was loaded and verified.</p>
+
+  <h2>2. The Working Command</h2>
+  <pre>docker run -h db2server --name db2server \
+  --restart=always --detach --privileged=true \
+  -p 50000:50000 \
+  -v db2-data-vol:/database \
+  --env-file env.list \
+  --platform=linux/amd64 \
+  icr.io/db2_community/db2</pre>
+
+  <h3>Required <code>env.list</code> file</h3>
+  <p>Create <code>env.list</code> in the working directory (<code>~/ws-dsh</code>):</p>
+  <pre>LICENSE=accept
+DB2INSTANCE=db2inst1
+DB2INST1_PASSWORD=password
+DB2PORT=50000
+DB2INST1_OWNER=db2inst1
+DB2INST1_OWNER_PASSWORD=password
+DB2INST1_OWNER_UID=1000
+DB2INST1_OWNER_GROUP=1000</pre>
+
+  <h2>3. Readiness Check</h2>
+  <p>DB2 is ready when the container logs show <code>Setup has completed</code> and the instance is active.</p>
+  <pre># Quick check: setup completed
+docker logs db2server --since 2m 2>&1 | grep -i "Setup has completed"
+
+# Thorough check: instance responds
+docker exec db2server su - db2inst1 -c "db2 list active databases"</pre>
+  <p>If the first command prints <code>(*) Setup has completed.</code>, DB2 is ready.</p>
+
+  <h2>4. What Went Wrong and the Fix</h2>
+
+  <h3>Issue 1: Missing <code>env.list</code></h3>
+  <p>The original command used <code>--env-file env.list</code>, but no <code>env.list</code> file existed in <code>~/ws-dsh</code>. Docker failed to start the container.</p>
+  <p><strong>Fix:</strong> Created <code>~/ws-dsh/env.list</code> with the required DB2 variables (see above).</p>
+
+  <h3>Issue 2: Host bind-mount ownership (the real blocker)</h3>
+  <p>After creating <code>env.list</code>, the container started but kept restarting. The logs showed:</p>
+  <pre>useradd: cannot create directory /database/config/db2inst1
+useradd: cannot create directory /database/config/db2fenc1</pre>
+  <p>and later:</p>
+  <pre>ERROR: The instance home directory "/database/config/db2inst1" is invalid because it
+is not owned by the user "db2inst1". Change the ownership of the home directory
+to be owned by the instance user and its primary group.</pre>
+  <p><strong>Root cause:</strong> The <code>-v ~/ws-dsh/db2-data:/database</code> bind mount. On Docker Desktop macOS, files in a host bind mount are remapped to <code>root:root</code> inside the container, and <code>chown</code> does not take effect on the mount. DB2's setup requires the instance home directories (<code>/database/config/db2inst1</code>, <code>/database/config/db2fenc1</code>) to be owned by <code>db2inst1</code>/<code>db2fenc1</code>. Attempts to fix ownership on the host (<code>chown 1000:1000</code>) and inside the container both failed because the bind mount remaps ownership.</p>
+  <p><strong>Fix:</strong> Switched to a Docker named volume, which is a real Linux filesystem inside the Docker VM where ownership works correctly:</p>
+  <pre>docker volume create db2-data-vol</pre>
+  <p>Then re-ran the container with <code>-v db2-data-vol:/database</code> instead of the host bind mount.</p>
+
+  <h2>5. Verified Result</h2>
+  <p>After switching to the named volume, the setup completed successfully:</p>
+  <pre>(*) Configuring/updating instance ...
+DBI1070I  Program db2icrt completed successfully.
+(*) Cataloging existing databases
+DB20000I  The UPDATE DATABASE MANAGER CONFIGURATION command completed
+SQL1063N  DB2START processing was successful.
+(*) All databases are now active.
+(*) Setup has completed.</pre>
+  <p>Container status: <code>Up About a minute</code> (stable, not restarting). Instance <code>db2inst1</code> running (PID 5040).</p>
+
+  <h2>6. Important Note: Data Location</h2>
+  <div class="note">
+    <p>The data now lives in the Docker named volume <code>db2-data-vol</code>, <strong>not</strong> in <code>~/ws-dsh/db2-data</code>. If you specifically need the data in a host folder, the host bind-mount approach will not work on Docker Desktop macOS for this image — that is the tradeoff. To use the host folder, you would need a different Docker engine (e.g., Docker on Linux) or a different volume-sharing setup.</p>
+  </div>
+
+  <h2>7. Files in This Guide</h2>
+  <ul>
+    <li><code>DB2_Setup_Guide.md</code> — this guide (Markdown)</li>
+    <li><code>DB2_Setup_Guide.html</code> — the same guide in HTML format</li>
+    <li><code>env.list</code> — the DB2 environment file used for the container</li>
+    <li><code>large_table.sql</code> — the SQL script that creates and loads the sample <code>large_table</code></li>
+  </ul>
+
+  <h2>8. Creating a Database</h2>
+  <p>The DB2 Community image starts with the instance but no user database (the <code>/database/data</code> directory is empty). Create a database before creating tables:</p>
+  <pre>docker exec db2server su - db2inst1 -c "db2 create database mydb"</pre>
+  <p>Expected output:</p>
+  <pre>DB20000I  The CREATE DATABASE command completed successfully.</pre>
+  <p>Connect to the new database for all subsequent work:</p>
+  <pre>docker exec db2server su - db2inst1 -c "db2 connect to mydb"</pre>
+
+  <h2>9. Creating the Sample Table <code>large_table</code></h2>
+  <p>The sample table has <strong>10 columns</strong> and <strong>50,000,000 records</strong>. The SQL is in <code>large_table.sql</code>:</p>
+  <pre>CREATE TABLE large_table (
+    id          INTEGER NOT NULL PRIMARY KEY,
+    name        VARCHAR(50),
+    category    VARCHAR(50),
+    price       DECIMAL(10,2),
+    stock       INTEGER,
+    created_at  TIMESTAMP,
+    updated_at  TIMESTAMP,
+    is_active   SMALLINT,
+    description VARCHAR(100),
+    rating      DECIMAL(3,2)
+);</pre>
+
+  <h3>9a. Primary key must be <code>NOT NULL</code></h3>
+  <p>DB2 rejects a primary key column that can contain nulls:</p>
+  <pre>SQL0542N  The column named "ID" cannot be a column of a primary key or unique
+key constraint because it can contain null values.  SQLSTATE=42831</pre>
+  <p><strong>Fix:</strong> declare the key column <code>INTEGER NOT NULL PRIMARY KEY</code>.</p>
+
+  <h3>9b. Transaction log full — increase the log size</h3>
+  <p>The first 50M-row insert failed with:</p>
+  <pre>SQL0964C  The transaction log for the database is full.  SQLSTATE=57011</pre>
+  <p>The default DB2 Community database has a small transaction log (13 primary + 12 secondary files × 4MB ≈ 100MB), which is too small for a 50M-row insert. Increase the log size (DB2 requires <code>logprimary + logsecond &lt;= 256</code>):</p>
+  <pre>docker exec db2server su - db2inst1 -c "db2 connect to mydb; db2 \"UPDATE DATABASE CONFIGURATION FOR mydb USING LOGFILSIZ 8192 LOGPRIMARY 200 LOGSECOND 56\""</pre>
+  <p>Expected output:</p>
+  <pre>DB20000I  The UPDATE DATABASE CONFIGURATION command completed successfully.
+SQL1363W  One or more of the parameters submitted for immediate modification
+were not changed dynamically. ... the database must be shutdown and reactivated
+before the configuration parameter changes become effective.</pre>
+  <p>Apply the change by deactivating and reactivating the database:</p>
+  <pre>docker exec db2server su - db2inst1 -c "db2 deactivate db mydb; db2 activate db mydb"</pre>
+  <p>Expected output:</p>
+  <pre>DB20000I  The DEACTIVATE DATABASE command completed successfully.
+DB20000I  The ACTIVATE DATABASE command completed successfully.</pre>
+  <p>This gives 256 log files × 32MB ≈ 8GB of transaction log space.</p>
+
+  <h3>9c. Load 50,000,000 records</h3>
+  <p>DB2 has no <code>generate_series</code>, so the insert uses a recursive CTE (<code>WITH</code>) to generate the 50M row numbers, then derives the other 9 columns from the row number:</p>
+  <pre>INSERT INTO large_table
+WITH cte (id) AS (
+    SELECT 1 FROM SYSIBM.SYSDUMMY1
+    UNION ALL
+    SELECT id + 1 FROM cte WHERE id < 50000000
+)
+SELECT
+    id,
+    'item_' || id,
+    'cat_' || MOD(id, 10),
+    MOD(id, 1000) * 0.99,
+    MOD(id, 5000),
+    TIMESTAMP('2026-01-01') + id SECONDS,
+    TIMESTAMP('2026-01-01') + (MOD(id, 1000)) MINUTES,
+    MOD(id, 2),
+    'description for item ' || id,
+    MOD(id, 100) / 100.0
+FROM cte;</pre>
+  <p>Run it (as a single <code>db2</code> command, or via <code>db2 -tvf large_table.sql</code>):</p>
+  <pre>docker exec db2server su - db2inst1 -c "db2 connect to mydb; db2 -tvf large_table.sql"</pre>
+
+  <h3>9d. Transaction log still fills — insert in chunks</h3>
+  <p>Even with 8GB of log, a single 50M-row transaction can fill the log. The reliable approach is to load the rows in <strong>10 chunks of 5,000,000</strong>, each chunk a separate transaction that commits and reuses the log. The chunked script is <code>insert_chunks.sh</code>:</p>
+  <pre>#!/bin/bash
+# Load 50,000,000 rows into large_table in 10 chunks of 5,000,000 each.
+# Each chunk is a separate transaction that commits, so the transaction log
+# is reused instead of filling up in one single 50M-row transaction.
+
+run_chunk() {
+  local start=$1
+  local end=$2
+  su - db2inst1 -c "db2 connect to mydb; db2 \"INSERT INTO large_table
+    WITH cte (id) AS (SELECT $start FROM SYSIBM.SYSDUMMY1
+      UNION ALL SELECT id + 1 FROM cte WHERE id < $end)
+    SELECT id, 'item_' || id, 'cat_' || MOD(id,10), MOD(id,1000)*0.99,
+      MOD(id,5000), TIMESTAMP('2026-01-01') + id SECONDS,
+      TIMESTAMP('2026-01-01') + (MOD(id,1000)) MINUTES, MOD(id,2),
+      'description for item ' || id, MOD(id,100)/100.0 FROM cte\""
+}
+
+run_chunk 1 5000000
+run_chunk 5000001 10000000
+run_chunk 10000001 15000000
+run_chunk 15000001 20000000
+run_chunk 20000001 25000000
+run_chunk 25000001 30000000
+run_chunk 30000001 35000000
+run_chunk 35000001 40000000
+run_chunk 40000001 45000000
+run_chunk 45000001 50000000</pre>
+
+  <h2>10. Verification</h2>
+  <p>After the insert, verify the row count and sample rows:</p>
+  <pre>docker exec db2server su - db2inst1 -c "db2 connect to mydb; db2 \"SELECT COUNT(*) AS total_rows FROM large_table\""
+docker exec db2server su - db2inst1 -c "db2 connect to mydb; db2 \"SELECT * FROM large_table ORDER BY id FETCH FIRST 5 ROWS ONLY\""</pre>
+  <p>Expected row count: <code>50,000,000</code>.</p>
+
+  <h2>11. Summary</h2>
+  <table>
+    <tr><th>Check</th><th>Command</th><th>Result</th></tr>
+    <tr><td>Container up</td><td><code>docker ps --filter name=db2server</code></td><td><code>Up</code> (stable)</td></tr>
+    <tr><td>Port open</td><td><code>nc -zv localhost 50000</code></td><td><code>succeeded</code></td></tr>
+    <tr><td>Database created</td><td><code>db2 create database mydb</code></td><td><code>DB20000I</code> completed</td></tr>
+    <tr><td>Table created</td><td><code>CREATE TABLE large_table</code></td><td><code>DB20000I</code> completed</td></tr>
+    <tr><td>50M rows loaded</td><td><code>INSERT INTO large_table</code></td><td>completed</td></tr>
+    <tr><td>Row count</td><td><code>SELECT COUNT(*) FROM large_table</code></td><td><code>50,000,000</code></td></tr>
+  </table>
+  <p>The DB2 Community container is <strong>fully working</strong>: the instance is running, port 50000 is published, database <code>mydb</code> exists, and the 50,000,000-row <code>large_table</code> is loaded and verified.</p>
+</body>
+</html>

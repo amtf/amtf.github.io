@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PostgreSQL Storage Check — ws-postgres</title>
+  <style>
+    body { font-family: -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; color: #222; }
+    h1 { border-bottom: 2px solid #333; padding-bottom: 6px; }
+    table { border-collapse: collapse; width: 100%; margin: 12px 0; }
+    th, td { border: 1px solid #ccc; padding: 8px 10px; text-align: left; }
+    th { background: #f0f0f0; }
+    code { background: #f5f5f5; padding: 2px 5px; border-radius: 3px; }
+    .big { font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h1>PostgreSQL Storage Check — ws-postgres</h1>
+  <p>Date: 2026-09-05</p>
+
+  <h2>Database and Table Sizes</h2>
+  <table>
+    <tr><th>Item</th><th>Size</th></tr>
+    <tr><td>Database <code>postgres</code></td><td class="big">7087 MB (~7.1 GB)</td></tr>
+    <tr><td><code>large_table</code></td><td class="big">7079 MB (~7.1 GB)</td></tr>
+    <tr><td><code>sample_products</code></td><td>32 kB</td></tr>
+  </table>
+  <p>The 50,000,000-row <code>large_table</code> accounts for essentially all of the database's ~7.1 GB storage.</p>
+
+  <h2>Physical Data Directory</h2>
+  <p>The actual on-disk location where the data lives is the PostgreSQL data directory:</p>
+  <p><code>/opt/homebrew/var/postgresql@18</code></p>
+
+  <h2>Size of Each Folder in the Data Directory</h2>
+  <p>Command: <code>du -sh /opt/homebrew/var/postgresql@18/*</code></p>
+  <table>
+    <tr><th>Folder / File</th><th>Size</th><th>Explanation</th></tr>
+    <tr><td><code>base</code></td><td class="big">7.0G</td><td>The actual database data lives here. Each database is a subdirectory under <code>base</code>; <code>large_table</code> (7079 MB) is stored here.</td></tr>
+    <tr><td><code>pg_wal</code></td><td class="big">1.0G</td><td>Write-ahead log (WAL). Records all changes before they are committed, used for crash recovery and replication.</td></tr>
+    <tr><td><code>global</code></td><td>552K</td><td>System-wide catalog data shared across all databases (roles, databases, shared relations).</td></tr>
+    <tr><td><code>postgresql.conf</code></td><td>32K</td><td>Main server configuration file.</td></tr>
+    <tr><td><code>pg_multixact</code></td><td>16K</td><td>Multi-transaction status data (for shared row locks / multixact IDs).</td></tr>
+    <tr><td><code>pg_hba.conf</code></td><td>8K</td><td>Client authentication (host-based auth) configuration.</td></tr>
+    <tr><td><code>pg_subtrans</code></td><td>8K</td><td>Sub-transaction status data.</td></tr>
+    <tr><td><code>pg_xact</code></td><td>8K</td><td>Transaction commit status data.</td></tr>
+    <tr><td><code>pg_ident.conf</code></td><td>4K</td><td>Identity mapping for authentication.</td></tr>
+    <tr><td><code>pg_logical</code></td><td>4K</td><td>Logical decoding (replication) state.</td></tr>
+    <tr><td><code>PG_VERSION</code></td><td>4K</td><td>Version marker file.</td></tr>
+    <tr><td><code>postgresql.auto.conf</code></td><td>4K</td><td>Auto-generated config overrides.</td></tr>
+    <tr><td><code>postmaster.opts</code></td><td>4K</td><td>Command-line options of the running postmaster.</td></tr>
+    <tr><td><code>postmaster.pid</code></td><td>4K</td><td>Postmaster process info / lock file.</td></tr>
+    <tr><td><code>pg_commit_ts</code></td><td>0B</td><td>Commit timestamps (empty).</td></tr>
+    <tr><td><code>pg_dynshmem</code></td><td>0B</td><td>Dynamic shared memory (empty).</td></tr>
+    <tr><td><code>pg_notify</code></td><td>0B</td><td>LISTEN/NOTIFY state (empty).</td></tr>
+    <tr><td><code>pg_replslot</code></td><td>0B</td><td>Replication slots (empty).</td></tr>
+    <tr><td><code>pg_serial</code></td><td>0B</td><td>Serialized transaction state (empty).</td></tr>
+    <tr><td><code>pg_snapshots</code></td><td>0B</td><td>Snapshot state (empty).</td></tr>
+    <tr><td><code>pg_stat</code></td><td>0B</td><td>Statistics data (empty).</td></tr>
+    <tr><td><code>pg_stat_tmp</code></td><td>0B</td><td>Temporary statistics (empty).</td></tr>
+    <tr><td><code>pg_tblspc</code></td><td>0B</td><td>Tablespace mappings (empty).</td></tr>
+    <tr><td><code>pg_twophase</code></td><td>0B</td><td>Two-phase commit state (empty).</td></tr>
+  </table>
+
+  <h2>Key Takeaways</h2>
+  <ul>
+    <li>The ~7.1 GB database storage is physically in the <code>base</code> subdirectory.</li>
+    <li><code>pg_wal</code> holds 1.0G of write-ahead log.</li>
+    <li><code>large_table</code> is the dominant table, using 7079 MB of the 7087 MB database.</li>
+  </ul>
+</body>
+</html>
