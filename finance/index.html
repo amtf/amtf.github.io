@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finance Reports - Investment Analysis Hub</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', 'PingFang SC', 'Microsoft JhengHei', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
+            color: #334155;
+            min-height: 100vh;
+            padding: 48px 20px;
+            -webkit-font-smoothing: antialiased;
+            text-rendering: optimizeLegibility;
+        }
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+        }
+        header {
+            position: relative;
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 48px 40px 44px;
+            background: #ffffff;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 10px 30px rgba(15, 23, 42, 0.05);
+            overflow: hidden;
+        }
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #1e3a5f, #2563eb, #1e3a5f);
+        }
+        header h1 {
+            font-size: 2.4em;
+            font-weight: 700;
+            color: #0f172a;
+            letter-spacing: -0.02em;
+            margin-bottom: 12px;
+        }
+        header p {
+            color: #64748b;
+            font-size: 1.05em;
+        }
+        .reports-grid {
+            display: grid;
+            gap: 24px;
+        }
+        .report-card {
+            background: #ffffff;
+            border-radius: 14px;
+            padding: 32px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 4px 16px rgba(15, 23, 42, 0.04);
+            transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        .report-card:hover {
+            transform: translateY(-4px);
+            border-color: #c7d2fe;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08), 0 14px 36px rgba(15, 23, 42, 0.10);
+        }
+        .report-card h2 {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #1e3a5f;
+            margin-bottom: 10px;
+            letter-spacing: -0.01em;
+        }
+        .report-card .badge {
+            display: inline-block;
+            padding: 5px 14px;
+            border-radius: 999px;
+            font-size: 0.8em;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            margin-bottom: 14px;
+        }
+        .badge-buy { background: #dcfce7; color: #15803d; }
+        .badge-info { background: #dbeafe; color: #1d4ed8; }
+        .report-card .meta {
+            color: #64748b;
+            font-size: 0.9em;
+            margin-bottom: 14px;
+        }
+        .report-card .summary {
+            color: #475569;
+            line-height: 1.75;
+            font-size: 0.98em;
+        }
+        .report-card .link-arrow {
+            color: #1d4ed8;
+            font-weight: 600;
+            margin-top: 16px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .report-card .link-arrow::after {
+            content: '→';
+            transition: transform 0.25s ease;
+        }
+        .report-card:hover .link-arrow::after {
+            transform: translateX(5px);
+        }
+        footer {
+            text-align: center;
+            margin-top: 48px;
+            padding: 24px 20px;
+            color: #94a3b8;
+            font-size: 0.9em;
+            border-top: 1px solid #e2e8f0;
+        }
+        footer a {
+            color: #1d4ed8;
+            text-decoration: none;
+        }
+        footer a:hover {
+            text-decoration: underline;
+        }
+        @media (max-width: 600px) {
+            body { padding: 24px 16px; }
+            header { padding: 36px 24px 32px; }
+            header h1 { font-size: 1.8em; }
+            .report-card { padding: 24px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 Finance Reports Hub</h1>
+            <p>Investment Analysis Center — Hong Kong Equities &amp; Financial Insights</p>
+        </header>
+
+        <div class="reports-grid">
+            <a class="report-card" href="https://github.com/amtf/finance/blob/main/sunevision-1686-hk-investment-report.md" target="_blank">
+                <span class="badge badge-buy">BUY</span>
+                <h2>新意網集團 (1686.HK) — 深度全方位投資分析報告</h2>
+                <div class="meta">
+                    📅 報告日期：2025年中 · 🏷️ 行業：數據中心/科技基建 · 📊 評級：買入
+                </div>
+                <div class="summary">
+                    由資深港股分析師及科技基礎設施行業專家撰寫的深度報告。全方位覆蓋公司起源與早期嘗試、科網泡沫時代的轉型歷程、
+                    從B2C互聯網門戶到B2B數據中心龍頭的關鍵轉捩點、母公司新鴻基地產的角色、HKIX網絡效應與護城河、
+                    AI浪潮與雲端運算帶來的最新催化劑、財務健康度與估值分析，以及潛在風險與投資結論。
+                </div>
+                <div class="link-arrow">閱讀完整報告</div>
+            </a>
+        </div>
+
+        <footer>
+            <p>🔒 Private Repository · <a href="https://github.com/amtf/finance" target="_blank">github.com/amtf/finance</a></p>
+            <p style="margin-top: 8px;">Generated by Finance Reports Hub</p>
+        </footer>
+    </div>
+</body>
+</html>
