@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>七政四餘 / 果老星宗 — Moira Notes Hub</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', 'PingFang SC', 'Microsoft JhengHei', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
+            color: #334155;
+            min-height: 100vh;
+            padding: 48px 20px;
+            -webkit-font-smoothing: antialiased;
+            text-rendering: optimizeLegibility;
+        }
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+        }
+        header {
+            position: relative;
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 48px 40px 44px;
+            background: #ffffff;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 10px 30px rgba(15, 23, 42, 0.05);
+            overflow: hidden;
+        }
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #7e22ce, #a855f7, #7e22ce);
+        }
+        header h1 {
+            font-size: 2.4em;
+            font-weight: 700;
+            color: #0f172a;
+            letter-spacing: -0.02em;
+            margin-bottom: 12px;
+        }
+        header p {
+            color: #64748b;
+            font-size: 1.05em;
+            line-height: 1.6;
+        }
+        .reports-grid {
+            display: grid;
+            gap: 24px;
+        }
+        .report-card {
+            background: #ffffff;
+            border-radius: 14px;
+            padding: 32px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 4px 16px rgba(15, 23, 42, 0.04);
+            transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        a.report-card:hover {
+            transform: translateY(-4px);
+            border-color: #c7d2fe;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08), 0 14px 36px rgba(15, 23, 42, 0.10);
+        }
+        .report-card h2 {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #1e3a5f;
+            margin-bottom: 10px;
+            letter-spacing: -0.01em;
+        }
+        .report-card .badge {
+            display: inline-block;
+            padding: 5px 14px;
+            border-radius: 999px;
+            font-size: 0.8em;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            margin-bottom: 14px;
+        }
+        .badge-astro { background: #f3e8ff; color: #7e22ce; }
+        .badge-info { background: #dbeafe; color: #1d4ed8; }
+        .badge-lock { background: #fef3c7; color: #b45309; }
+        .report-card .meta {
+            color: #64748b;
+            font-size: 0.9em;
+            margin-bottom: 14px;
+        }
+        .report-card .summary {
+            color: #475569;
+            line-height: 1.75;
+            font-size: 0.98em;
+        }
+        .report-card ul {
+            margin: 12px 0 0 20px;
+            color: #475569;
+            line-height: 1.8;
+            font-size: 0.96em;
+        }
+        .report-card .link-arrow {
+            color: #1d4ed8;
+            font-weight: 600;
+            margin-top: 16px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .report-card .link-arrow::after {
+            content: '\2192';
+            transition: transform 0.25s ease;
+        }
+        a.report-card:hover .link-arrow::after {
+            transform: translateX(5px);
+        }
+        footer {
+            text-align: center;
+            margin-top: 48px;
+            padding: 24px 20px;
+            color: #94a3b8;
+            font-size: 0.9em;
+            border-top: 1px solid #e2e8f0;
+        }
+        footer a {
+            color: #1d4ed8;
+            text-decoration: none;
+        }
+        footer a:hover {
+            text-decoration: underline;
+        }
+        @media (max-width: 600px) {
+            body { padding: 24px 16px; }
+            header { padding: 36px 24px 32px; }
+            header h1 { font-size: 1.8em; }
+            .report-card { padding: 24px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔮 七政四餘 · 果老星宗</h1>
+            <p>Moira Notes Hub — 中國星命學的流派、歷史與排盤實務</p>
+        </header>
+
+        <div class="reports-grid">
+            <div class="report-card">
+                <span class="badge badge-astro">果老星宗</span>
+                <h2>Moira 屬於哪一派？</h2>
+                <div class="meta">七政四餘推命術三大流派 · 託名考證 · 盤式四制</div>
+                <div class="summary">
+                    <strong>Moira 屬「果老星宗」一派</strong>。七政四餘傳統上分三派：<br>
+                    <ul>
+                        <li><strong>琴堂五星</strong> — 最古老，託名唐僧一行；重<em>宮位（宮主）</em>，用「酉安身」。</li>
+                        <li><strong>果老星宗</strong> — 託名張果老，實為明萬曆二十一年（1593）陸位輯；<em>重度主（宿度）</em>，心法「以度主為是，宮主為非」；身宮＝太陰；卯立命＋太陽同絡定命度。</li>
+                        <li><strong>天官五星</strong> — 託名耶律楚材，源出遼耶律純《星命總括》（984），成立最晚。</li>
+                    </ul>
+                    三派皆為<strong>託名</strong>：一行、張果、耶律楚材的正史傳記都沒有學習七政四餘的記載，而十一曜約唐末五代才成立、十二宮出自九世紀《七曜攘災決》，年代並不相合。
+                </div>
+            </div>
+
+            <div class="report-card">
+                <span class="badge badge-info">HISTORY</span>
+                <h2>歷史沿革與盤式演變</h2>
+                <div class="meta">戰國二十八宿 → 唐代印度星學東傳 → 宋元明三代盤式 → 現代復興</div>
+                <div class="summary">
+                    二十八宿早見於戰國（曾侯乙墓，前433）。唐代《宿曜經》傳入黃道十二宮，羅睺、計都隨佛教天文學東來，與七政合稱「九曜」，後增紫炁、月孛成<strong>十一曜</strong>。
+                    明代為鼎盛期：1593 陸位輯《果老星宗》、1594 萬民英《星學大成》（入《四庫全書》）。
+                </div>
+                <div class="summary" style="margin-top: 14px;">
+                    <strong>四種盤式</strong>（七政四餘獨有的難題 — 每隔數百年曆法改革＋歲差，古法即失效）：
+                    <ul>
+                        <li>宋以前 · <strong>黃道恆星制</strong>（《三辰通載》）— 不用五行，論相位與宮度衰旺</li>
+                        <li>元 · <strong>赤道恆星制</strong>（《鄭氏星案》）— 納入陰陽五行與宮位神煞，遂衍生三派</li>
+                        <li>明 · <strong>似黃道恆星制</strong>（《果老星宗》）— 果老標準，十二宮不等宮（約28–33度）</li>
+                        <li>清以後 · <strong>黃道回歸制</strong> — 以春分點起宮，古宿度法不驗</li>
+                    </ul>
+                </div>
+            </div>
+
+            <a class="report-card" href="https://github.com/amtf/moira" target="_blank">
+                <span class="badge badge-info">SOFTWARE</span>
+                <h2>Moira 軟件源碼（macOS / Apple Silicon）</h2>
+                <div class="meta">GPLv2 · 上游 v1.50 Final · OpenJDK 21 + SWT cocoa</div>
+                <div class="summary">
+                    At Home Projects 的七政四餘／天星擇日／佔星盤程式，本倉為可在 macOS / Apple Silicon 上<strong>編譯並執行</strong>的源碼樹，含 copy-on-計算修正與預設出生資料。提供 build-moira.sh、run-moira.sh 及七政四餘引擎參數（ayanamsha anchor、limit_seq）說明。
+                </div>
+                <div class="link-arrow">View Repo</div>
+            </a>
+
+            <div class="report-card">
+                <span class="badge badge-lock">PRIVATE</span>
+                <h2>個人命盤筆記 — 不公開</h2>
+                <div class="meta">存放於 private repo <code>amtf/moira</code> 的 <code>notes/</code></div>
+                <div class="summary">
+                    本命盤解讀、大限推運、流年疊限等個人筆記<strong>一律存於 private repo，不對外公開</strong>。此類內容含出生日期時間、地點經緯度及個人批語，屬敏感個人資料，故只作私人存檔與搜尋之用。
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>🔒 Personal notes are private · <a href="https://github.com/amtf/moira" target="_blank">github.com/amtf/moira</a></p>
+            <p style="margin-top: 8px;">Generated by Moira Notes Hub</p>
+        </footer>
+    </div>
+</body>
+</html>
