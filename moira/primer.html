@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>七政四餘初學者指南 — Moira 所用的原理</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', 'PingFang SC', 'Microsoft JhengHei', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
+            color: #334155;
+            min-height: 100vh;
+            padding: 48px 20px;
+            -webkit-font-smoothing: antialiased;
+        }
+        .container { max-width: 960px; margin: 0 auto; }
+        header {
+            position: relative; text-align: center; margin-bottom: 36px;
+            padding: 44px 40px 40px; background: #ffffff; border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px rgba(15,23,42,0.06), 0 10px 30px rgba(15,23,42,0.05);
+            overflow: hidden;
+        }
+        header::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+            background: linear-gradient(90deg, #7e22ce, #a855f7, #7e22ce);
+        }
+        header h1 { font-size: 2.2em; font-weight: 700; color: #0f172a; letter-spacing: -0.02em; margin-bottom: 12px; }
+        header p { color: #64748b; font-size: 1.02em; line-height: 1.6; }
+        .grid { display: grid; gap: 22px; }
+        .card {
+            background: #ffffff; border-radius: 14px; padding: 30px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px rgba(15,23,42,0.06), 0 4px 16px rgba(15,23,42,0.04);
+        }
+        .card h2 { font-size: 1.35em; font-weight: 700; color: #1e3a5f; margin-bottom: 6px; letter-spacing: -0.01em; }
+        .card .badge {
+            display: inline-block; padding: 5px 14px; border-radius: 999px;
+            font-size: 0.78em; font-weight: 700; letter-spacing: 0.05em; margin-bottom: 12px;
+        }
+        .badge-astro { background: #f3e8ff; color: #7e22ce; }
+        .badge-info { background: #dbeafe; color: #1d4ed8; }
+        .badge-step { background: #dcfce7; color: #15803d; }
+        .card .meta { color: #64748b; font-size: 0.9em; margin-bottom: 12px; }
+        .card p, .card li { color: #475569; line-height: 1.75; font-size: 0.97em; }
+        .card ol, .card ul { margin: 10px 0 0 20px; }
+        .card li { margin-bottom: 8px; }
+        .card strong { color: #1e3a5f; }
+        code {
+            background: #f1f5f9; padding: 2px 6px; border-radius: 4px;
+            font-family: var(--font-mono, monospace); font-size: 0.92em; color: #7c3aed;
+        }
+        table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 0.92em; }
+        th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid #e2e8f0; line-height: 1.55; }
+        th { color: #1e3a5f; font-weight: 700; background: #f8fafc; }
+        td { color: #475569; }
+        .note {
+            margin-top: 14px; padding: 14px 16px; background: #f8fafc;
+            border-left: 3px solid #7e22ce; border-radius: 0 8px 8px 0;
+            font-size: 0.92em; color: #475569; line-height: 1.7;
+        }
+        .back { display: inline-block; margin-bottom: 22px; color: #1d4ed8; text-decoration: none; font-size: 0.94em; font-weight: 600; }
+        .back:hover { text-decoration: underline; }
+        footer {
+            text-align: center; margin-top: 44px; padding: 24px 20px;
+            color: #94a3b8; font-size: 0.9em; border-top: 1px solid #e2e8f0;
+        }
+        footer a { color: #1d4ed8; text-decoration: none; }
+        footer a:hover { text-decoration: underline; }
+        @media (max-width: 600px) {
+            body { padding: 24px 16px; }
+            header { padding: 32px 22px 28px; }
+            header h1 { font-size: 1.6em; }
+            .card { padding: 22px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a class="back" href="index.html">&larr; 返回 七政四餘 · 果老星宗</a>
+        <header>
+            <h1>🔮 七政四餘初學者指南</h1>
+            <p>Moira 所用的原理 — 由十一曜、兩套座標，到起盤與推運</p>
+        </header>
+
+        <div class="grid">
+            <div class="card">
+                <span class="badge badge-astro">OVERVIEW</span>
+                <h2>一句話概覽</h2>
+                <p>七政四餘是一套<strong>真正的天文占星術</strong>：把出生那一刻天上十一顆「星曜」的實際位置記錄下來，投影到<strong>二十八宿</strong>與<strong>十二宮</strong>兩套座標上，再用五行生剋、廟旺利陷、星格神煞去解讀，最後用<strong>大限＋流年</strong>把靜態盤「播」成一生的運程。</p>
+                <div class="note">它跟八字的根本差別：<strong>八字只用干支、不需天文；七政四餘必須算星曆、查宿度、處理歲差。</strong>這也正是它一度幾乎失傳的原因。</div>
+            </div>
+
+            <div class="card">
+                <span class="badge badge-info">01</span>
+                <h2>十一曜 ＝ 七政 ＋ 四餘</h2>
+                <div class="meta">七政是真實天體；四餘是看不見的計算點</div>
+                <table>
+                    <tr><th>簡稱</th><th>全名</th><th>備註</th></tr>
+                    <tr><td>日</td><td>太陽</td><td>最尊，主貴氣、名聲</td></tr>
+                    <tr><td>月</td><td>太陰</td><td>主身宮、情緒、內在</td></tr>
+                    <tr><td>金 / 木 / 水 / 火 / 土</td><td>太白 / 歲星 / 辰星 / 熒惑 / 鎮星</td><td>五大行星</td></tr>
+                    <tr><td>羅睺</td><td>—</td><td>白道與黃道的<strong>升交點</strong></td></tr>
+                    <tr><td>計都</td><td>—</td><td>白道與黃道的<strong>降交點</strong>（與羅睺相對）</td></tr>
+                    <tr><td>月孛</td><td>—</td><td>月球軌道的<strong>遠地點</strong></td></tr>
+                    <tr><td>紫炁</td><td>—</td><td>推算而得的隱曜（一說約 28 年行一周天）</td></tr>
+                </table>
+                <div class="note">羅睺、計都約在唐代隨佛教與印度天文學東傳（《宿曜經》），與七政合稱「九曜」；紫炁、月孛出現較晚，約唐末五代才補足成<strong>十一曜</strong>。</div>
+            </div>
+
+            <div class="card">
+                <span class="badge badge-info">02</span>
+                <h2>兩套座標：十二宮 與 二十八宿</h2>
+                <div class="meta">同一圈天，用兩把尺來量 — 本系統最特別之處</div>
+                <table>
+                    <tr><th></th><th>十二宮</th><th>二十八宿</th></tr>
+                    <tr><td>數量</td><td>12 等分（子丑寅…亥）</td><td>28 個星區（角亢氐房心尾箕…）</td></tr>
+                    <tr><td>闊度</td><td>大致相等</td><td><strong>完全不等距</strong>：井宿 30.45° 最闊，觜宿僅 1°</td></tr>
+                    <tr><td>用途</td><td>論<strong>人事</strong>：命宮、財帛、夫妻、官祿…</td><td>論<strong>宿度</strong>：定命度、行大限</td></tr>
+                    <tr><td>性質</td><td>符號分區</td><td>真實恆星參考框架</td></tr>
+                </table>
+                <div class="note">每位星曜都有兩個座標，例如「星宿 5° ＝ 午宮 15°」是同一個位置的兩種讀法。<br>二十八宿極古老：曾侯乙墓（約公元前 433 年）漆箱蓋已刻有完整宿名，比古希臘黃道帶更早。</div>
+            </div>
+
+            <div class="card">
+                <span class="badge badge-step">03</span>
+                <h2>起盤五步</h2>
+                <div class="meta">第 ②③ 步是果老派的獨門心法</div>
+                <ol>
+                    <li><strong>輸入與校正：真太陽時</strong> — 出生年月日時 ＋ 地點經緯度 → 校正真太陽時 → 排出八字四柱。（鐘錶時間不等於太陽時間，必須校正。）</li>
+                    <li><strong>立命 — 卯立命</strong> — 把「時支」加在<strong>太陽所在宮</strong>上，順數至「卯」，該宮即為<strong>命宮</strong>。<br>例：設午時生、太陽在酉宮 → 午加酉，順數至「卯」落午 → <strong>命宮在午</strong>。</li>
+                    <li><strong>定命度 — 太陽同絡</strong> — 太陽在其宮內的度數 ＝ 命宮的同一度數，換算成宿度即<strong>命度</strong>。<br>承上例：太陽在酉宮 15° → 命宮午宮 15° → 換算得<strong>星宿 5 度</strong>為命度。</li>
+                    <li><strong>安身 — 身宮 ＝ 太陰</strong> — 身宮即月亮所在宮（源自印度占星的月身宮盤 Chandra chart）。琴堂派用「酉安身」，與果老不同。</li>
+                    <li><strong>飛星入宮</strong> — 十一曜按出生當日實際天象落入各宮各宿，並標註廟旺利陷。</li>
+                </ol>
+                <div class="note">果老心法《先天心法》：「先觀主曜，次察身星，當以二十八宿為本，十一曜為用」，並強調<strong>「以度主為是，宮主為非」</strong> — 果老重宿度（度主）勝於宮位，這是它與琴堂派最根本的分歧。</div>
+            </div>
+
+            <div class="card">
+                <span class="badge badge-step">04</span>
+                <h2>吉凶點睇：五層判讀</h2>
+                <div class="meta">由「大象（根本）」看到「小象（輔助）」</div>
+                <table>
+                    <tr><th>層</th><th>名稱</th><th>在做什麼</th></tr>
+                    <tr><td>1 最重</td><td>廟旺利陷</td><td>星曜落該宮是否得地：廟、旺、樂、喜、殿、垣為得力；怒、陷、衰為失力</td></tr>
+                    <tr><td>2</td><td>恩用仇難</td><td>由命宮五行起：生我為<strong>恩</strong>、我生為<strong>用</strong>、剋我為<strong>仇</strong>、我剋為<strong>難</strong>。命宮屬金 → 恩土計、用水孛、仇木炁、難火羅</td></tr>
+                    <tr><td>3</td><td>度主 與 宮主</td><td>果老以<strong>度主</strong>（命度所落宿之主星）為主，宮主為輔</td></tr>
+                    <tr><td>4</td><td>政餘格局</td><td>星曜組合成的喜格／忌格，如計孛交戰、木打寶瓶、火燒牛角、土羅相會</td></tr>
+                    <tr><td>5 輔助</td><td>神煞</td><td>斗杓、注受、天雄、血刃、紅鸞、驛馬等逾百項，果老視之為「小象」</td></tr>
+                </table>
+                <div class="note">判讀原則：<strong>先看大象（廟旺、恩難、度主、格局），再以神煞小象點綴。</strong>只看神煞不看星格，是本門常見誤用。</div>
+            </div>
+
+            <div class="card">
+                <span class="badge badge-step">05</span>
+                <h2>推運三層：時間點樣「播」</h2>
+                <table>
+                    <tr><th>層</th><th>名稱</th><th>說明</th></tr>
+                    <tr><td>1</td><td>童限</td><td>出生到「出童限」；由太陽至中氣的時刻逆推（三日為一年、一日為四個月、一時辰為十日，再加十年）。此期大限與命宮一體，受剋尤重</td></tr>
+                    <tr><td>2</td><td>大限（洞微大限）</td><td>由命度起<strong>逆行</strong>二十八宿，主十年尺度大運。每進新宮，該宮即成<strong>限命宮</strong>，十二宮隨之旋轉重排成「限盤」</td></tr>
+                    <tr><td>3</td><td>流年</td><td>每年十一曜飛入限盤，疊在大限之上論當年吉凶</td></tr>
+                </table>
+                <div class="note">輔助尚有<strong>小限</strong>（12 年一輪）、<strong>月限</strong>、<strong>洞微飛限</strong>，但果老重心在大限 ＋ 流年。<br>論凶要訣：<strong>「但逢剋限之星，便是興災之日。」</strong> 限被剋、流星剋限才是凶事成立條件；單單神煞凶未必應驗。</div>
+            </div>
+
+            <div class="card">
+                <span class="badge badge-info">06</span>
+                <h2>三派分歧 與 四種盤式</h2>
+                <table>
+                    <tr><th></th><th>琴堂五星</th><th>果老星宗</th><th>天官五星</th></tr>
+                    <tr><td>託名</td><td>唐僧一行</td><td>唐道士張果老</td><td>耶律楚材</td></tr>
+                    <tr><td>實際</td><td>傳說最古</td><td>明萬曆 21 年（1593）陸位輯</td><td>源出遼耶律純《星命總括》（984），最晚</td></tr>
+                    <tr><td>核心</td><td>重宮位（宮主）</td><td><strong>重宿度（度主）</strong></td><td>身宮取法同果老</td></tr>
+                    <tr><td>安身</td><td>酉安身</td><td>身 ＝ 太陰</td><td>同果老</td></tr>
+                </table>
+                <div class="note">三派皆為<strong>託名</strong>：一行、張果、耶律楚材的正史傳記都沒有學習七政四餘的記載；十一曜約唐末五代才成立、十二宮出自九世紀初《七曜攘災決》，與三人年代並不相合。</div>
+                <p style="margin-top:16px;"><strong>四種盤式</strong>（每隔數百年曆法改革＋歲差，古法即失效）：</p>
+                <table>
+                    <tr><th>盤式</th><th>時代／典籍</th><th>特點</th></tr>
+                    <tr><td>黃道恆星制</td><td>宋以前《三辰通載》</td><td>不用五行，二十八宿無五行；論相位與宮度衰旺</td></tr>
+                    <tr><td>赤道恆星制</td><td>元《鄭氏星案》</td><td>納入陰陽五行與宮位神煞，遂衍生三派</td></tr>
+                    <tr><td><strong>似黃道恆星制</strong></td><td><strong>明《果老星宗》</strong></td><td><strong>果老標準</strong>；赤道投影推黃道，十二宮不等宮（約 28–33 度）</td></tr>
+                    <tr><td>黃道回歸制</td><td>清以後</td><td>以春分點起宮，十二宮隨歲差漂移，古宿度法不驗</td></tr>
+                </table>
+            </div>
+
+            <div class="card">
+                <span class="badge badge-astro">07</span>
+                <h2>初學者常犯的五個誤解</h2>
+                <ol>
+                    <li><strong>以為「曜」都是星星</strong> — 七政是真實天體，四餘是計算出來的交點／遠地點，看不見。</li>
+                    <li><strong>只看宮位不看宿度</strong> — 果老的靈魂在宿度（度主），這是它跟琴堂最根本的分別。</li>
+                    <li><strong>拿神煞當主論</strong> — 神煞是小象，須先有大象成形才會應驗。</li>
+                    <li><strong>拿現代星曆硬套古籍</strong> — 盤式與歲差會讓結果差十幾度，必須對照同代盤式。李光浦指出鄭希誠《鄭氏星案》未修正歲差，宿度沿用唐宋數據。</li>
+                    <li><strong>以為它跟八字／紫微是同一套</strong> — 八字只用干支；紫微全屬虛星。七政四餘是實星＋虛星、須算星曆。有趣的是紫微的<strong>四化</strong>（化祿權科忌）源自七政的<strong>十干化曜</strong>。</li>
+                </ol>
+            </div>
+
+            <div class="card">
+                <span class="badge badge-info">08</span>
+                <h2>術語速查</h2>
+                <table>
+                    <tr><th>術語</th><th>意思</th></tr>
+                    <tr><td>命宮</td><td>由時辰與太陽推出的宮位，代表「我」與格局起點</td></tr>
+                    <tr><td>命度</td><td>命宮換算到二十八宿的精確度數，果老的判斷核心</td></tr>
+                    <tr><td>命主</td><td>命度所落宿的主星</td></tr>
+                    <tr><td>身宮 / 身主</td><td>身宮＝太陰所在宮；身主＝太陰</td></tr>
+                    <tr><td>恩 / 用 / 仇 / 難</td><td>由命宮五行起的四種關係星</td></tr>
+                    <tr><td>廟旺利陷</td><td>星曜得地與否的強弱等級</td></tr>
+                    <tr><td>童限 / 大限 / 流年</td><td>童年運 / 十年大運 / 一年一換</td></tr>
+                    <tr><td>限命宮</td><td>大限所在宮，在限盤中充當「命宮」</td></tr>
+                    <tr><td>十干化曜</td><td>十天干各配一曜（甲火乙孛丙木丁金戊土己月庚水辛炁壬計癸羅），太陽不參與</td></tr>
+                </table>
+            </div>
+
+            <div class="card">
+                <span class="badge badge-step">09</span>
+                <h2>用 Moira 實際要做的三件事</h2>
+                <ol>
+                    <li><strong>核對命宮</strong> — Moira 預設安命法有時不是果老「卯立命」，排出來後要自行在「編輯 → 修改命宮」調整，或用第 ②③ 步驗算一次。</li>
+                    <li><strong>選盤式</strong> — 果老標準是「似黃道恆星制」（明制）；亦有實踐者主用「鄭氏星案恆星制」（元制）。這會影響宿度，是實踐分歧而非對錯。</li>
+                    <li><strong>用文字匯出，不要只截圖</strong> — 文字匯出有<strong>角分精度</strong>，並含八字／干支、節氣時刻、童限、二十八宿界度表、廟旺利陷、十神、神煞詳解與流年星曜完整位置；截圖只四捨五入到整度且缺這些 metadata。</li>
+                </ol>
+            </div>
+        </div>
+
+        <footer>
+            <p>🔒 Personal notes are private · <a href="https://github.com/amtf/moira" target="_blank">github.com/amtf/moira</a> · <a href="index.html">返回分區</a></p>
+            <p style="margin-top: 8px;">Generated by Moira Notes Hub</p>
+        </footer>
+    </div>
+</body>
+</html>
